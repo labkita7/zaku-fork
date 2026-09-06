@@ -16,6 +16,7 @@ pub mod diagnostics {
     // Discovery errors.
     pub const MIXED_FORMATS: &str = "BRUNO_MIXED_FORMATS";
     pub const NO_MANIFEST: &str = "BRUNO_NO_MANIFEST";
+    pub const IO_ERROR: &str = "BRUNO_IO_ERROR";
 
     // Request-level skip reasons.
     pub const UNRECOGNIZED_TYPE: &str = "BRUNO_UNRECOGNIZED_TYPE";
@@ -480,6 +481,7 @@ mod tests {
         vec![
             MIXED_FORMATS,
             NO_MANIFEST,
+            IO_ERROR,
             UNRECOGNIZED_TYPE,
             UNSUPPORTED_PROTOCOL,
             UNSUPPORTED_AUTH,

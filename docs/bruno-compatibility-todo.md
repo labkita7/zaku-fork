@@ -134,12 +134,12 @@ path source yang jelas.
 
 ### BRUNO-03 — Deteksi root collection dengan aman
 
-- [ ] Implementasikan discovery berdasarkan manifest `opencollection.yml`
+- [x] Implementasikan discovery berdasarkan manifest `opencollection.yml`
   (modern) atau `bruno.json` (legacy).
-- [ ] Tolak source yang memiliki format request `.bru` dan `.yml` tercampur.
-- [ ] Terapkan daftar ignore dari manifest bila tersedia, dan selalu abaikan
+- [x] Tolak source yang memiliki format request `.bru` dan `.yml` tercampur.
+- [x] Terapkan daftar ignore dari manifest bila tersedia, dan selalu abaikan
   `.env`, `node_modules`, `.git`, dan file script sebagai input request.
-- [ ] Test nested folder, manifest hilang, YAML non-Bruno, mixed format, dan
+- [x] Test nested folder, manifest hilang, YAML non-Bruno, mixed format, dan
   ignored directory.
 
 **Selesai jika:** hasil discovery adalah daftar path request yang eksplisit;
