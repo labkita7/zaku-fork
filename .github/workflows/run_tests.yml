@@ -20,50 +20,20 @@ env:
 
 jobs:
   run_tests:
-    name: "Test ${{ matrix.name }}"
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "Linux ARM64"
-            os: ubuntu-24.04-arm
-          - name: "Linux x86_64"
-            os: ubuntu-24.04
-          - name: "macOS ARM64"
-            os: macos-26
-          - name: "macOS x86_64"
-            os: macos-26-intel
-          - name: "Windows ARM64"
-            os: windows-11-arm
-          - name: "Windows x86_64"
-            os: windows-2025
-    runs-on: ${{ matrix.os }}
+    name: "Test macOS ARM64"
+    runs-on: macos-26
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: "Install Bash (macOS)"
-        if: runner.os == 'macOS'
+      - name: "Install Bash"
         run: brew install bash
         shell: bash
 
-      - name: "Setup Cargo config (Linux and macOS)"
-        if: runner.os != 'Windows'
+      - name: "Setup Cargo config"
         run: |
           mkdir -p ./../.cargo
           cp ./.cargo/workflow-config.toml ./../.cargo/config.toml
-        shell: bash
-
-      - name: "Setup Cargo config (Windows)"
-        if: runner.os == 'Windows'
-        run: |
-          New-Item -ItemType Directory -Path "./../.cargo" -Force
-          Copy-Item -Path "./.cargo/workflow-config.toml" -Destination "./../.cargo/config.toml"
-        shell: pwsh
-
-      - name: "Install dependencies (Linux)"
-        if: runner.os == 'Linux'
-        run: ./script/linux
         shell: bash
 
       - name: "Setup Rust cache"
@@ -71,28 +41,21 @@ jobs:
         with:
           cache-bin: false
           cache-targets: false
-          shared-key: ${{ matrix.os }}
+          shared-key: macos-26
 
       - name: "Install Nextest"
         uses: taiki-e/install-action@6c6fd71fe4fb72c3697d269963d0e15df8adedad # v2.85.10
         with:
           tool: nextest
 
-      - name: "Setup sccache (Linux and macOS)"
-        if: runner.os != 'Windows'
+      - name: "Setup sccache"
         run: ./script/setup-sccache
         shell: bash
-        env: &sccache_env
+        env:
           R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_SCCACHE_BUCKET: ${{ vars.R2_SCCACHE_BUCKET }}
-
-      - name: "Setup sccache (Windows)"
-        if: runner.os == 'Windows'
-        run: ./script/setup-sccache.ps1
-        shell: pwsh
-        env: *sccache_env
 
       - name: "Run tests"
         run: cargo nextest run --workspace --all-features --no-fail-fast
