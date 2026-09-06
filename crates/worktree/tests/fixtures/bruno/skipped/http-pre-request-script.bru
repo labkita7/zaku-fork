@@ -1,0 +1,24 @@
+meta {
+  name: Sign Request
+  type: http
+  seq: 21
+}
+
+post {
+  url: https://api.example.com/signed
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+}
+
+script:pre-request {
+  req.setHeader("X-Timestamp", String(Date.now()));
+}
+
+body:json {
+  {
+    "value": 1
+  }
+}

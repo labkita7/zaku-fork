@@ -1,0 +1,17 @@
+meta {
+  name: Introspect Via Get
+  type: graphql
+  seq: 23
+}
+
+get {
+  url: https://api.example.com/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query {
+    __typename
+  }
+}

@@ -1,0 +1,12 @@
+info:
+  name: Get Notifications
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: https://api.example.com/notifications
+  auth:
+    type: bearer
+    bearer:
+      token: __REDACTED_TEST_SECRET__

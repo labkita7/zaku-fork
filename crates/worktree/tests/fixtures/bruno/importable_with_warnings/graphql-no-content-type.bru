@@ -1,0 +1,22 @@
+meta {
+  name: Albums Without Header
+  type: graphql
+  seq: 9
+}
+
+post {
+  url: https://api.example.com/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query Albums {
+    albums {
+      data {
+        id
+        title
+      }
+    }
+  }
+}

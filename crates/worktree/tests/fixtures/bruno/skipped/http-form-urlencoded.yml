@@ -1,0 +1,17 @@
+info:
+  name: Submit Form
+  type: http
+  seq: 17
+
+http:
+  method: POST
+  url: https://api.example.com/forms
+  body:
+    type: form-urlencoded
+    data:
+      - name: apiKey
+        value: __REDACTED_TEST_SECRET__
+      - name: numbers
+        value: "+919988776655"
+      - name: message
+        value: hello world

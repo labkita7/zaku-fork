@@ -1,0 +1,11 @@
+info:
+  name: Empty Query
+  type: graphql
+  seq: 24
+
+graphql:
+  method: POST
+  url: https://api.example.com/graphql
+  body:
+    variables: |-
+      {}
