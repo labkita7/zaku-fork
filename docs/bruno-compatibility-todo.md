@@ -119,14 +119,14 @@ dan `skipped`, tanpa mengubah perilaku request TOML yang sudah ada.
 
 ### BRUNO-02 — Buat model import murni dan laporan diagnostik
 
-- [ ] Di crate `worktree`, buat modul khusus Bruno dengan tipe tanpa UI:
+- [x] Di crate `worktree`, buat modul khusus Bruno dengan tipe tanpa UI:
   `BrunoFormat`, `BrunoImportReport`, `BrunoImportWarning`,
   `ImportedRequest`, dan penanda bahwa request asal adalah HTTP atau GraphQL.
-- [ ] `ImportedRequest` harus menyimpan `RequestFile` native hasil mapping,
+- [x] `ImportedRequest` harus menyimpan `RequestFile` native hasil mapping,
   relative source path, dan warning terstruktur.
-- [ ] Pisahkan discovery source collection dari parsing isi request agar unit
+- [x] Pisahkan discovery source collection dari parsing isi request agar unit
   test tidak membutuhkan `gpui`, filesystem nyata, atau network.
-- [ ] Jangan mengubah `RequestFile`, parser TOML, atau writer TOML pada item
+- [x] Jangan mengubah `RequestFile`, parser TOML, atau writer TOML pada item
   ini.
 
 **Selesai jika:** test dapat membuat report untuk input tiruan dan error punya

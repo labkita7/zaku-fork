@@ -43,10 +43,155 @@ pub mod diagnostics {
 /// Placeholder that every credential value in the fixture corpus must use.
 pub const CREDENTIAL_PLACEHOLDER: &str = "__REDACTED_TEST_SECRET__";
 
+use crate::request::RequestFile;
+
+/// Source format of a Bruno request file.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BrunoFormat {
+    /// Legacy `.bru` markup.
+    Bru,
+    /// OpenCollection YAML (`.yml`).
+    Yml,
+}
+
+impl BrunoFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            BrunoFormat::Bru => "bru",
+            BrunoFormat::Yml => "yml",
+        }
+    }
+}
+
+/// Whether the source request is plain HTTP or a GraphQL request.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BrunoRequestKind {
+    Http,
+    GraphQl,
+}
+
+/// One successfully mapped request, ready to be written as native TOML.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportedRequest {
+    /// Path of the source file relative to the collection root.
+    pub source_path: String,
+    pub format: BrunoFormat,
+    pub kind: BrunoRequestKind,
+    /// Native request produced by the mapping; never mutated by the report.
+    pub request: RequestFile,
+    pub warnings: Vec<BrunoImportWarning>,
+}
+
+impl ImportedRequest {
+    pub fn new(
+        source_path: impl Into<String>,
+        format: BrunoFormat,
+        kind: BrunoRequestKind,
+        request: RequestFile,
+        warnings: Vec<BrunoImportWarning>,
+    ) -> Self {
+        Self {
+            source_path: source_path.into(),
+            format,
+            kind,
+            request,
+            warnings,
+        }
+    }
+}
+
+/// Structured warning attached to an imported request.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BrunoImportWarning {
+    pub code: &'static str,
+    pub message: String,
+}
+
+impl BrunoImportWarning {
+    pub fn new(code: &'static str, message: impl Into<String>) -> Self {
+        Self {
+            code,
+            message: message.into(),
+        }
+    }
+}
+
+/// A request that was not imported and why.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BrunoSkippedRequest {
+    pub source_path: String,
+    pub format: BrunoFormat,
+    pub code: &'static str,
+    pub detail: String,
+}
+
+impl BrunoSkippedRequest {
+    pub fn new(
+        source_path: impl Into<String>,
+        format: BrunoFormat,
+        code: &'static str,
+        detail: impl Into<String>,
+    ) -> Self {
+        Self {
+            source_path: source_path.into(),
+            format,
+            code,
+            detail: detail.into(),
+        }
+    }
+}
+
+/// A collection-level or parse-level error with a clear source path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BrunoImportError {
+    pub source_path: String,
+    pub code: &'static str,
+    pub message: String,
+}
+
+impl BrunoImportError {
+    pub fn new(
+        source_path: impl Into<String>,
+        code: &'static str,
+        message: impl Into<String>,
+    ) -> Self {
+        Self {
+            source_path: source_path.into(),
+            code,
+            message: message.into(),
+        }
+    }
+}
+
+/// Result of importing one Bruno collection.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct BrunoImportReport {
+    pub imported: Vec<ImportedRequest>,
+    pub skipped: Vec<BrunoSkippedRequest>,
+    pub errors: Vec<BrunoImportError>,
+}
+
+impl BrunoImportReport {
+    pub fn new(
+        imported: Vec<ImportedRequest>,
+        skipped: Vec<BrunoSkippedRequest>,
+        errors: Vec<BrunoImportError>,
+    ) -> Self {
+        Self {
+            imported,
+            skipped,
+            errors,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::diagnostics;
-    use super::CREDENTIAL_PLACEHOLDER;
+    use super::{
+        diagnostics, BrunoFormat, BrunoImportError, BrunoImportReport, BrunoImportWarning,
+        BrunoRequestKind, BrunoSkippedRequest, ImportedRequest, RequestFile,
+        CREDENTIAL_PLACEHOLDER,
+    };
     use std::path::{Path, PathBuf};
 
     const FIXTURE_ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/bruno");
@@ -440,5 +585,126 @@ mod tests {
                 "fixture '{path}' must not be empty"
             );
         }
+    }
+
+    fn sample_request() -> RequestFile {
+        use crate::request::{
+            RequestFileBody, RequestFileBodyType, RequestFileHeader, RequestFileHttp,
+        };
+
+        RequestFile {
+            meta: Default::default(),
+            http: RequestFileHttp {
+                method: "POST".to_string(),
+                url: "https://api.example.com/graphql".to_string(),
+                params: Vec::new(),
+                headers: vec![RequestFileHeader {
+                    name: "Content-Type".to_string(),
+                    value: "application/json".to_string(),
+                    disabled: false,
+                }],
+                body: Some(RequestFileBody {
+                    r#type: RequestFileBodyType::Json,
+                    data: r#"{"query":"query { __typename }"}"#.to_string(),
+                }),
+            },
+        }
+    }
+
+    #[test]
+    fn imported_request_holds_native_request_and_path() {
+        let request = sample_request();
+        let imported = ImportedRequest::new(
+            "importable/graphql-query.bru",
+            BrunoFormat::Bru,
+            BrunoRequestKind::GraphQl,
+            request.clone(),
+            vec![BrunoImportWarning::new(
+                diagnostics::WARNING_CONTENT_TYPE_ADDED,
+                "added Content-Type: application/json",
+            )],
+        );
+
+        assert_eq!(imported.source_path, "importable/graphql-query.bru");
+        assert_eq!(imported.format, BrunoFormat::Bru);
+        assert_eq!(imported.kind, BrunoRequestKind::GraphQl);
+        assert_eq!(imported.request, request);
+        assert_eq!(imported.warnings.len(), 1);
+        assert_eq!(
+            imported.warnings[0].code,
+            diagnostics::WARNING_CONTENT_TYPE_ADDED
+        );
+    }
+
+    #[test]
+    fn report_aggregates_imported_skipped_and_errors() {
+        let imported = ImportedRequest::new(
+            "importable/http-get.yml",
+            BrunoFormat::Yml,
+            BrunoRequestKind::Http,
+            sample_request(),
+            Vec::new(),
+        );
+        let skipped = BrunoSkippedRequest::new(
+            "skipped/http-basic-auth.bru",
+            BrunoFormat::Bru,
+            diagnostics::UNSUPPORTED_AUTH,
+            "basic auth is not supported on MVP",
+        );
+        let error = BrunoImportError::new(
+            "corrupt.bru",
+            diagnostics::MALFORMED_SYNTAX,
+            "unbalanced braces",
+        );
+        let report = BrunoImportReport::new(vec![imported], vec![skipped], vec![error]);
+
+        assert_eq!(report.imported.len(), 1);
+        assert_eq!(report.imported[0].source_path, "importable/http-get.yml");
+        assert_eq!(report.skipped.len(), 1);
+        assert_eq!(report.skipped[0].source_path, "skipped/http-basic-auth.bru");
+        assert_eq!(report.skipped[0].code, diagnostics::UNSUPPORTED_AUTH);
+        assert_eq!(report.errors.len(), 1);
+        assert_eq!(report.errors[0].source_path, "corrupt.bru");
+        assert_eq!(report.errors[0].code, diagnostics::MALFORMED_SYNTAX);
+    }
+
+    #[test]
+    fn model_codes_are_known_diagnostics() {
+        let known = all_diagnostic_codes();
+        let warning = BrunoImportWarning::new(diagnostics::WARNING_SETTINGS_DROPPED, "settings");
+        let skipped = BrunoSkippedRequest::new(
+            "a.bru",
+            BrunoFormat::Bru,
+            diagnostics::DYNAMIC_VALUE,
+            "dynamic",
+        );
+        let error = BrunoImportError::new("a.yml", diagnostics::MIXED_FORMATS, "mixed");
+        let report = BrunoImportReport::new(vec![], vec![], vec![]);
+        assert!(
+            report.imported.is_empty() && report.skipped.is_empty() && report.errors.is_empty()
+        );
+
+        for (label, code, message) in [
+            ("warning", warning.code, warning.message),
+            ("skipped", skipped.code, skipped.detail),
+            ("error", error.code, error.message),
+        ] {
+            assert!(
+                known.contains(&code),
+                "{label} references unknown diagnostic code '{code}'"
+            );
+            assert!(!message.is_empty(), "{label} must carry a message");
+        }
+    }
+
+    #[test]
+    fn format_extension_mapping() {
+        assert_eq!(BrunoFormat::Bru.extension(), "bru");
+        assert_eq!(BrunoFormat::Yml.extension(), "yml");
+    }
+
+    #[test]
+    fn request_kind_distinguishes_http_and_graphql() {
+        assert_ne!(BrunoRequestKind::Http, BrunoRequestKind::GraphQl);
     }
 }
