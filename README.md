@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/buildzaku/zaku/main/script/install.
   <span>macOS</span>
 </h3>
 
-Download the DMG for [Apple silicon](https://api.zaku.dev/releases/beta/latest/macos-aarch64/download) or [Intel](https://api.zaku.dev/releases/beta/latest/macos-x86_64/download). Requires macOS 14 or later.
+Download the DMG for [Apple silicon](https://api.zaku.dev/releases/beta/latest/macos-aarch64/download) or [Intel](https://api.zaku.dev/releases/beta/latest/macos-x86_64/download). Requires macOS 13 or later.
 
 After copying Zaku to Applications, open Terminal and run:
 
