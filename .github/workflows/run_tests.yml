@@ -21,7 +21,6 @@ env:
 jobs:
   run_tests:
     name: "Test ${{ matrix.name }}"
-    if: github.repository == 'buildzaku/zaku'
     strategy:
       fail-fast: false
       matrix:
