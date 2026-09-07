@@ -1,0 +1,19 @@
+meta {
+  name: Search Users
+  type: http
+  seq: 5
+}
+
+get {
+  url: https://api.example.com/users
+}
+
+params:query {
+  filter: active
+  ~debug: 1
+}
+
+headers {
+  Accept: application/json
+  ~X-Trace: 1
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Broken Variables
+  type: graphql
+  seq: 25
+}
+
+post {
+  url: https://api.example.com/graphql
+  body: graphql
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:graphql {
+  query Albums($limit: Int) {
+    albums(limit: $limit) {
+      id
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "limit":
+  }
+}

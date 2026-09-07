@@ -1,6 +1,9 @@
 mod ignore;
 mod request;
 
+pub mod bruno;
+pub mod bruno_discovery;
+
 pub use language::DiskState;
 pub use request::{
     REQUEST_FILE_VERSION, RequestFile, RequestFileBody, RequestFileBodyType, RequestFileHeader,

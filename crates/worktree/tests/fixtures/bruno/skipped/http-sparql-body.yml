@@ -1,0 +1,16 @@
+info:
+  name: Query Triples
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: https://api.example.com/sparql
+  body:
+    type: sparql
+    data: |-
+      SELECT ?subject ?predicate ?object
+      WHERE {
+        ?subject ?predicate ?object .
+      }
+      LIMIT 10

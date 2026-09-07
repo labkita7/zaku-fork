@@ -1,0 +1,14 @@
+meta {
+  name: Get Notifications
+  type: http
+  seq: 14
+}
+
+get {
+  url: https://api.example.com/notifications
+  auth: bearer
+}
+
+auth:bearer {
+  token: __REDACTED_TEST_SECRET__
+}

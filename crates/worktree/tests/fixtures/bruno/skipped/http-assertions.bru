@@ -1,0 +1,19 @@
+meta {
+  name: Check Health
+  type: http
+  seq: 22
+}
+
+get {
+  url: https://api.example.com/health
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("health endpoint responds", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

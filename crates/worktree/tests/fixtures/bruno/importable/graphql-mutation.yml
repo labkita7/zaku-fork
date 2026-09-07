@@ -1,0 +1,18 @@
+info:
+  name: Create Album
+  type: graphql
+  seq: 7
+
+graphql:
+  method: POST
+  url: https://api.example.com/graphql
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    query: |-
+      mutation CreateAlbum {
+        createAlbum(input: { title: "Sunrise" }) {
+          id
+        }
+      }

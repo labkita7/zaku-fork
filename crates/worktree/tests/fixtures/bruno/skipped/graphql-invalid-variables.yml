@@ -1,0 +1,22 @@
+info:
+  name: Broken Variables
+  type: graphql
+  seq: 25
+
+graphql:
+  method: POST
+  url: https://api.example.com/graphql
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    query: |-
+      query Albums($limit: Int) {
+        albums(limit: $limit) {
+          id
+        }
+      }
+    variables: |-
+      {
+        "limit":
+      }

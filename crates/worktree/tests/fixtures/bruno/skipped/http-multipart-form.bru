@@ -1,0 +1,15 @@
+meta {
+  name: Upload Report
+  type: http
+  seq: 18
+}
+
+post {
+  url: https://api.example.com/uploads
+  body: multipart-form
+}
+
+body:multipart-form {
+  file: @file(uploads/report.json) @contentType(application/json)
+  note: weekly summary
+}

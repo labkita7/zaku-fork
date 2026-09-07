@@ -1,0 +1,13 @@
+info:
+  name: Realtime Feed
+  type: websocket
+  seq: 27
+
+websocket:
+  url: wss://api.example.com/feed
+  headers:
+    - name: Authorization
+      value: Bearer __REDACTED_TEST_SECRET__
+  message:
+    type: text
+    data: '{"type":"subscribe"}'
