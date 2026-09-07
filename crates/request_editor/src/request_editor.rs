@@ -644,7 +644,10 @@ impl RequestEditor {
         self.project_path(cx)
             .and_then(|project_path| {
                 project_path.path.file_name().map(|file_name| {
-                    let file_name = file_name.strip_suffix(".toml").unwrap_or(file_name);
+                    let file_name = file_name
+                        .strip_suffix(".toml")
+                        .or_else(|| file_name.strip_suffix(".bru"))
+                        .unwrap_or(file_name);
                     SharedString::from(file_name.to_owned())
                 })
             })
