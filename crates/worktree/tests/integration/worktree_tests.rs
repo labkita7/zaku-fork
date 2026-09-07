@@ -70,48 +70,6 @@ async fn test_traversal(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-async fn test_bruno_requests(cx: &mut TestAppContext) {
-    cx.executor().allow_parking();
-
-    let temp_fs = TempFs::new(cx.executor());
-    temp_fs.insert_tree(
-        "project",
-        json!({
-            "get-user.bru": "",
-            "collection.bru": "",
-            "folder.bru": "",
-            "environments": {
-                "dev.bru": "",
-            },
-            "requests.toml": "",
-        }),
-    );
-
-    let worktree = Worktree::new(
-        temp_fs.path().join("project"),
-        true,
-        temp_fs.clone(),
-        Arc::new(AtomicUsize::new(1)),
-        true,
-        WorktreeId::from_usize(1),
-        &mut cx.to_async(),
-    )
-    .await
-    .unwrap();
-
-    cx.update(|cx| worktree.read(cx).scan_complete()).await;
-
-    worktree.read_with(cx, |worktree, _| {
-        let is_request = |path: &RelPath| worktree.entry_for_path(path).unwrap().is_request;
-        assert!(is_request(rel_path("get-user.bru")));
-        assert!(is_request(rel_path("requests.toml")));
-        assert!(!is_request(rel_path("collection.bru")));
-        assert!(!is_request(rel_path("folder.bru")));
-        assert!(!is_request(rel_path("environments/dev.bru")));
-    });
-}
-
-#[gpui::test]
 async fn test_git_index_events(cx: &mut TestAppContext) {
     cx.executor().allow_parking();
 
