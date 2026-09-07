@@ -1935,6 +1935,7 @@ impl ProjectPanel {
                             details.file_name.push_str(
                                 processing_file_name
                                     .strip_suffix(".toml")
+                                    .or_else(|| processing_file_name.strip_suffix(".bru"))
                                     .unwrap_or(processing_file_name),
                             );
                         } else {
@@ -3199,7 +3200,10 @@ fn file_name_for_entry(snapshot: &Snapshot, entry: &Entry) -> String {
 
 fn file_stem_for_entry(entry: &Entry) -> &str {
     let file_name = entry.path.file_name().unwrap_or_default();
-    file_name.strip_suffix(".toml").unwrap_or(file_name)
+    file_name
+        .strip_suffix(".toml")
+        .or_else(|| file_name.strip_suffix(".bru"))
+        .unwrap_or(file_name)
 }
 
 fn git_status_indicator(git_status: GitSummary) -> Option<(&'static str, Color)> {
@@ -3240,10 +3244,9 @@ fn is_missing_entry_name(file_name: &str, is_dir: bool, path_style: PathStyle) -
     }
 
     let path = Path::new(last_component);
-    let file_stem = if path
-        .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"))
-    {
+    let file_stem = if path.extension().is_some_and(|extension| {
+        extension.eq_ignore_ascii_case("toml") || extension.eq_ignore_ascii_case("bru")
+    }) {
         path.file_stem()
             .and_then(|stem| stem.to_str())
             .unwrap_or(last_component)
@@ -3266,7 +3269,9 @@ fn file_name_for_new_entry(file_name: &str, is_dir: bool, path_style: PathStyle)
     };
     if Path::new(last_component)
         .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"))
+        .is_some_and(|extension| {
+            extension.eq_ignore_ascii_case("toml") || extension.eq_ignore_ascii_case("bru")
+        })
     {
         return file_name.to_string();
     }
