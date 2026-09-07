@@ -1,0 +1,23 @@
+meta {
+  name: Create Album
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: https://api.example.com/graphql
+  body: graphql
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:graphql {
+  mutation CreateAlbum {
+    createAlbum(input: { title: "Sunrise" }) {
+      id
+    }
+  }
+}

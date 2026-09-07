@@ -1,0 +1,25 @@
+info:
+  name: List Albums Page
+  type: graphql
+  seq: 8
+
+graphql:
+  method: POST
+  url: https://api.example.com/graphql
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    query: |-
+      query Albums($limit: Int) {
+        albums(limit: $limit) {
+          data {
+            id
+            title
+          }
+        }
+      }
+    variables: |-
+      {
+        "limit": 5
+      }

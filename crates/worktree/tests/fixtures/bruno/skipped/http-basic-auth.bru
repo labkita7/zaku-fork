@@ -1,0 +1,26 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 13
+}
+
+post {
+  url: https://api.example.com/profile
+  body: json
+  auth: basic
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:basic {
+  username: testuser
+  password: __REDACTED_TEST_SECRET__
+}
+
+body:json {
+  {
+    "displayName": "Test User"
+  }
+}

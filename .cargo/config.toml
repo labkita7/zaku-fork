@@ -2,4 +2,4 @@
 app-version = "run --quiet --locked --package app_version --"
 
 [env]
-MACOSX_DEPLOYMENT_TARGET = "14.0"
+MACOSX_DEPLOYMENT_TARGET = "13.0"

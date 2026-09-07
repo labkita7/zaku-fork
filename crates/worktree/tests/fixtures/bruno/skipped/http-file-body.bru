@@ -1,0 +1,14 @@
+meta {
+  name: Upload Avatar
+  type: http
+  seq: 19
+}
+
+post {
+  url: https://api.example.com/avatar
+  body: file
+}
+
+body:file {
+  file: @file(uploads/avatar.png) @contentType(image/png)
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Get Status
+  type: http
+  seq: 10
+  tags: [
+    smoke
+  ]
+}
+
+get {
+  url: https://api.example.com/status
+}
+
+docs {
+  Health check endpoint used by the smoke suite.
+}
