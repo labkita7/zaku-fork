@@ -150,10 +150,7 @@ impl ProjectItem for RequestBuffer {
         path: &ProjectPath,
         cx: &mut App,
     ) -> Option<Task<anyhow::Result<Entity<Self>>>> {
-        let is_request = path
-            .path
-            .extension()
-            .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"));
+        let is_request = worktree::is_request_file_path(path.path.as_ref());
 
         if !is_request {
             return None;
@@ -640,10 +637,10 @@ impl Project {
         let metadata_task = cx.spawn(async move |this, cx| {
             let request_file = match load_file_task.await {
                 Ok(loaded) => {
-                    let parse_task =
-                        cx.background_spawn(
-                            async move { worktree::parse_request_file(&loaded.text) },
-                        );
+                    let path = path.clone();
+                    let parse_task = cx.background_spawn(async move {
+                        worktree::parse_request_file(&loaded.text, &path)
+                    });
                     Some(parse_task.await)
                 }
                 Err(error) if is_not_found_error(&error) => None,
