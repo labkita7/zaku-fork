@@ -1,14 +1,16 @@
+mod bru;
 mod ignore;
 mod request;
 
 pub mod bruno;
 pub mod bruno_discovery;
-
+pub use bru::BruFileData;
 pub use language::DiskState;
 pub use request::{
     REQUEST_FILE_VERSION, RequestFile, RequestFileBody, RequestFileBodyType, RequestFileHeader,
-    RequestFileHttp, RequestFileMeta, RequestFileParam, RequestFileState, parse_request_file,
-    request_method_short_name, serialize_request_file,
+    RequestFileHttp, RequestFileMeta, RequestFileParam, RequestFileState, is_bru_request_path,
+    is_request_file_path, parse_request_file, parse_request_file_with_bru,
+    request_method_short_name, serialize_request_file, serialize_request_file_at,
 };
 pub use settings::WorktreeId;
 
@@ -195,12 +197,18 @@ impl Worktree {
         &self,
         path: Arc<RelPath>,
         request_file: RequestFile,
+        bru_file_data: Option<BruFileData>,
         cx: &Context<Self>,
     ) -> Task<anyhow::Result<Arc<File>>> {
         let fs = self.fs().clone();
         let abs_path = self.absolutize(&path);
+        let write_path = path.clone();
         let write_task = cx.background_spawn(async move {
-            let contents = request::serialize_request_file(&request_file)?;
+            let contents = request::serialize_request_file_at(
+                &request_file,
+                write_path.as_ref(),
+                bru_file_data.as_ref(),
+            )?;
             fs.write(&abs_path, contents.as_bytes()).await
         });
 
@@ -2568,9 +2576,7 @@ impl BackgroundScanner {
                 }
 
                 child_entry.is_ignored = ignore_stack.is_abs_path_ignored(&child_abs_path, false);
-                child_entry.is_request = child_abs_path
-                    .extension()
-                    .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"));
+                child_entry.is_request = request::is_request_file_path(child_path.as_ref());
             }
 
             new_entries.push(child_entry);
@@ -2695,9 +2701,7 @@ impl BackgroundScanner {
                     fs_entry.is_ignored = ignore_stack.is_abs_path_ignored(&abs_path, is_dir);
                     fs_entry.is_external = is_external;
                     if !is_dir {
-                        fs_entry.is_request = abs_path
-                            .extension()
-                            .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"));
+                        fs_entry.is_request = request::is_request_file_path(path);
                     }
 
                     if let (Some(scan_queue_tx), true) = (&scan_queue_tx, is_dir) {
