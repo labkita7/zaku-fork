@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "setup": "sudo apt-get update -qq && sudo apt-get install -y -qq build-essential clang cmake curl git libasound2-dev libfontconfig-dev libssl-dev libvulkan1 libwayland-dev libx11-xcb-dev libxkbcommon-x11-dev llvm pkg-config rsync tar && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup-init && chmod +x /tmp/rustup-init && /tmp/rustup-init -y --profile minimal --default-toolchain 1.97.0 --no-modify-path && export PATH=\"$HOME/.cargo/bin:$PATH\" && cargo fetch"
-  }
-}

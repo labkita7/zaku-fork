@@ -1,7 +1,7 @@
 use gpui::{AppContext, Context, EventEmitter, Task};
 use std::sync::Arc;
 
-use worktree::{BruFileData, DiskState, File, RequestFileState};
+use worktree::{DiskState, File, RequestFileState};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestBufferEvent {
@@ -15,20 +15,14 @@ pub enum RequestBufferEvent {
 pub struct RequestBuffer {
     file: Arc<File>,
     request_file: RequestFileState,
-    bru_file_data: Option<BruFileData>,
     is_dirty: bool,
 }
 
 impl RequestBuffer {
-    pub fn new(
-        file: Arc<File>,
-        request_file: RequestFileState,
-        bru_file_data: Option<BruFileData>,
-    ) -> Self {
+    pub fn new(file: Arc<File>, request_file: RequestFileState) -> Self {
         Self {
             file,
             request_file,
-            bru_file_data,
             is_dirty: false,
         }
     }
@@ -65,10 +59,6 @@ impl RequestBuffer {
         &self.request_file
     }
 
-    pub fn bru_file_data(&self) -> Option<&BruFileData> {
-        self.bru_file_data.as_ref()
-    }
-
     pub fn set_request_file(&mut self, request_file: RequestFileState, cx: &mut Context<Self>) {
         if self.request_file == request_file {
             return;
@@ -80,16 +70,14 @@ impl RequestBuffer {
 
     pub fn reload(&mut self, cx: &Context<Self>) -> Task<anyhow::Result<()>> {
         let load_task = language::File::load(self.file.as_ref(), cx);
-        let path = self.file.path.clone();
 
         cx.spawn(async move |this, cx| {
             let contents = load_task.await?;
-            let parse_task = cx.background_spawn(async move {
-                worktree::parse_request_file_with_bru(&contents, path.as_ref())
-            });
-            let (request_file, bru_file_data) = parse_task.await;
+            let parse_task =
+                cx.background_spawn(async move { worktree::parse_request_file(&contents) });
+            let request_file = parse_task.await;
             this.update(cx, |this, cx| {
-                this.did_reload(request_file, bru_file_data, cx);
+                this.did_reload(request_file, cx);
             })?;
             anyhow::Ok(())
         })
@@ -119,14 +107,8 @@ impl RequestBuffer {
         cx.notify();
     }
 
-    pub fn did_reload(
-        &mut self,
-        request_file: RequestFileState,
-        bru_file_data: Option<BruFileData>,
-        cx: &mut Context<Self>,
-    ) {
+    pub fn did_reload(&mut self, request_file: RequestFileState, cx: &mut Context<Self>) {
         self.request_file = request_file;
-        self.bru_file_data = bru_file_data;
         let dirty_changed = self.is_dirty;
         self.is_dirty = false;
         if dirty_changed {

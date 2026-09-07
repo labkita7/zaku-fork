@@ -96,15 +96,15 @@ impl RequestBufferStore {
                         return Err(anyhow!("Cannot open non-request file"));
                     }
 
-                    let parse_task = cx.background_spawn(async move {
-                        worktree::parse_request_file_with_bru(&loaded.text, file_path.as_ref())
-                    });
-                    let (request_file, bru_file_data) = parse_task.await;
+                    let parse_task =
+                        cx.background_spawn(
+                            async move { worktree::parse_request_file(&loaded.text) },
+                        );
+                    let request_file = parse_task.await;
                     let reservation = cx.reserve_entity::<RequestBuffer>();
                     let buffer_id = BufferId::from(reservation.entity_id().as_non_zero_u64());
-                    let buffer = cx.insert_entity(reservation, |_| {
-                        RequestBuffer::new(file, request_file, bru_file_data)
-                    });
+                    let buffer =
+                        cx.insert_entity(reservation, |_| RequestBuffer::new(file, request_file));
 
                     this.update(cx, |this, cx| {
                         this.add_buffer(buffer_id, buffer.clone(), cx)?;
@@ -195,7 +195,7 @@ impl RequestBufferStore {
         cx: &mut Context<Self>,
     ) -> Task<anyhow::Result<()>> {
         let buffer = buffer.clone();
-        let (worktree, path, request_file, bru_file_data, was_dirty) = {
+        let (worktree, path, request_file, was_dirty) = {
             let buffer = buffer.read(cx);
             let RequestFileState::Parsed(request_file) = buffer.request_file().clone() else {
                 return Task::ready(Err(anyhow!("Cannot save invalid request")));
@@ -204,12 +204,11 @@ impl RequestBufferStore {
                 buffer.file().worktree.clone(),
                 buffer.file().path.clone(),
                 request_file,
-                buffer.bru_file_data().cloned(),
                 buffer.is_dirty(),
             )
         };
         let save_task = worktree.update(cx, |worktree, cx| {
-            worktree.write_request_file(path, request_file, bru_file_data, cx)
+            worktree.write_request_file(path, request_file, cx)
         });
 
         cx.spawn(async move |_, cx| {
