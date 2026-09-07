@@ -1,0 +1,15 @@
+info:
+  name: List Items
+  type: grpc
+  seq: 28
+
+grpc:
+  url: https://api.example.com:443
+  method: acme.catalog.Service/ListItems
+  methodType: unary
+  protoFilePath: proto/catalog.proto
+  metadata:
+    - name: Authorization
+      value: Bearer __REDACTED_TEST_SECRET__
+  message:
+    message: '{}'

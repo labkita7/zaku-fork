@@ -1,0 +1,21 @@
+info:
+  name: List Albums
+  type: graphql
+  seq: 6
+
+graphql:
+  method: POST
+  url: https://api.example.com/graphql
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    query: |-
+      query Albums {
+        albums {
+          data {
+            id
+            title
+          }
+        }
+      }

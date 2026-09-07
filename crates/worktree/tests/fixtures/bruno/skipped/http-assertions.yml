@@ -1,0 +1,14 @@
+info:
+  name: Check Health
+  type: http
+  seq: 22
+
+http:
+  method: GET
+  url: https://api.example.com/health
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"

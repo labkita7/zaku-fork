@@ -1,0 +1,13 @@
+info:
+  name: Introspect Via Get
+  type: graphql
+  seq: 23
+
+graphql:
+  method: GET
+  url: https://api.example.com/graphql
+  body:
+    query: |-
+      query {
+        __typename
+      }

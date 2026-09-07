@@ -1,0 +1,11 @@
+info:
+  name: Get Status
+  type: http
+  seq: 10
+  tags:
+    - smoke
+  description: Health check endpoint used by the smoke suite.
+
+http:
+  method: GET
+  url: https://api.example.com/status

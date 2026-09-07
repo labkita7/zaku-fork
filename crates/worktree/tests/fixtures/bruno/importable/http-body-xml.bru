@@ -1,0 +1,21 @@
+meta {
+  name: Send Report
+  type: http
+  seq: 4
+}
+
+post {
+  url: https://api.example.com/reports
+  body: xml
+}
+
+headers {
+  Content-Type: application/xml
+}
+
+body:xml {
+  <report>
+    <title>Daily sync</title>
+    <rows>12</rows>
+  </report>
+}

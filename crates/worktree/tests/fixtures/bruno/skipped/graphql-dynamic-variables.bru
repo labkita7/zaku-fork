@@ -1,0 +1,29 @@
+meta {
+  name: Dynamic Variables
+  type: graphql
+  seq: 26
+}
+
+post {
+  url: https://api.example.com/graphql
+  body: graphql
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:graphql {
+  query User($userId: ID!) {
+    user(id: $userId) {
+      name
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "userId": "{{userId}}"
+  }
+}

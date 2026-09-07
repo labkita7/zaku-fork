@@ -1,0 +1,12 @@
+info:
+  name: Get Article
+  type: http
+  seq: 16
+
+http:
+  method: GET
+  url: https://api.example.com/articles/:id
+  params:
+    - name: id
+      value: "42"
+      type: path
